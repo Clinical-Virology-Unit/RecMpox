@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Jansen
+    given-names: Daan
+    orcid: https://orcid.org/0000-0003-4612-6891
+title: "RecMpox: Classify consensus mpox genomes at diagnostic SNPs (recombinant calling)"
+version: v0.0.1
+url: github.com/DaanJansen94/RecMpox
+date-released: 2026-02-02
+abstract: "RecMpox classifies consensus mpox genomes at diagnostic SNPs and flags potential recombinants."
