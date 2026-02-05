@@ -4,27 +4,17 @@ RecMpox flags **recombination in mpox consensus genomes** by classifying each ge
 
 ## Installation
 
-### 1. Create conda environment with required tools
-
-```bash
-conda create -n recmpox python=3.9 -y
-conda activate recmpox
-conda install -c bioconda -c conda-forge minimap2 samtools -y
-conda install -c bioconda -c conda-forge squirrel -y
-conda env config vars set PYTHONNOUSERSITE=1
-conda deactivate && conda activate recmpox
-
-```
-
-### 2. Install RecMpox:
+### 1. Create conda environment with required tools and install RecMpox
 
 ```bash
 git clone https://github.com/DaanJansen94/RecMpox.git
 cd RecMpox
-pip install .
+conda env create -f environment-recmpox.yml
+conda activate recmpox
+pip install
 ```
 
-### 3. Re-installation (when updates are available):
+### 2. Re-installation (when updates are available):
 
 ```bash
 conda activate RecMpox  # Make sure you're in the right environment
