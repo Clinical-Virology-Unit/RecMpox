@@ -112,10 +112,13 @@ Jansen, D., Laumen, J., Siebenmann, E., & Vercauteren, K. (2025). LassaSeq: A Co
 ```
 
 ## License
-This project is licensed under the GNU General Public License v3.0 (GPL-3.0) - see the LICENSE file for details.
+
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0) - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
+
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
+
 If you encounter any problems or have questions, please open an issue on GitHub.
