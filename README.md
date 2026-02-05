@@ -74,12 +74,6 @@ recmpox -i accessions.txt -o output -ref Ia,Ib   # one accession per line or com
 ### Examples
 
 ```bash
-# Built-in Ia vs Ib
-recmpox -i fasta/ -o output -ref Ia,Ib -t 4
-
-# Built-in IIa vs IIb
-recmpox -i fasta/ -o output -ref IIa,IIb -t 4
-
 # Custom references
 recmpox -i fasta/ -o output -ref1 NC_003310.1 -ref2 PP601219.1 -ref1_g Ia -ref2_g Ib -t 4
 
