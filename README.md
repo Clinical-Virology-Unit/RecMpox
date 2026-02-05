@@ -108,7 +108,7 @@ Intermediate files (e.g. diagnostic_snps.txt, Squirrel outputs) are written unde
 If you use RecMpox in your research, please cite:
 
 ```
-Jansen, D., Laumen, J., Siebenmann, E., & Vercauteren, K. (2025). LassaSeq: A Command-Line Tool for Downloading, Processing and Analyzing Lassa Virus Sequences for Phylogenetic Analysis (v0.1.2). Zenodo. https://doi.org/10.5281/zenodo.14936276
+Jansen, D., & Vercauteren, K. RecMpox: A Command-Line Tool for Flagging Recombination Event in Monkeypox Viruses (v0.0.1). Zenodo. https://doi.org/10.5281/zenodo.14936276
 ```
 
 ## License
