@@ -1,6 +1,19 @@
 # RecMpox
 
-RecMpox flags **recombination in mpox consensus genomes** by classifying each genome at **diagnostic SNPs** (and optionally indels) between two references (e.g. Clade Ia vs Ib, or IIa vs IIb). It aligns refs with [Squirrel](https://github.com/aineniamh/squirrel), finds diagnostic sites, then classifies each consensus at those positions. Outputs include a **TSV**, an **interactive HTML report** (sortable table, bar chart, diagnostic sites and recombination tracts per sample), and **all_sequences.fasta**. Potential recombinants are flagged when both refs contribute ≥5% of diagnostic sites; the report shows recombination tracts and breakpoints per genome.
+RecMpox is a command-line tool that **flags potential recombination events** in monkeypox viruses. It does not confirm recombination, but highlights genomes that may be recombinant and warrants further investigation. RecMpox works by detecting regions within a genome that appear to originate from two different parental viruses.
+
+### How RecMpox Works??
+1. **References are required**: RecMpox compares your genomes against two reference sequences (for example, Clade Ia vs. Ib, or Ib vs. IIb), because recombination can only occur between two distinct lineages.
+2. **Alignment and diagnostic SNPs**: The references are aligned using [Squirrel](https://github.com/aineniamh/squirrel), ensuring that each position is directly comparable. RecMpox identifies positions where the two references differ. These are called diagnostic SNPs. These SNPs are informative because they indicate which lineage a base came from. Positions that are identical between the references are ignored, as they provide no information about recombination.
+3. **Consensus genome classification**: Your consensus genomes are aligned to the same references. At each diagnostic SNP, the base is classified as matching reference 1, reference 2, or other (e.g., gaps or ambiguous bases).
+4. **Flagging potential recombinants**: If both references contribute at least 5% of the diagnostic positions in a genome, RecMpox flags it as a potential recombinant, since no single lineage clearly dominates.
+5. **Recombination tracts and breakpoints**: By examining the pattern of reference matches along the genome, RecMpox infers recombination tracts and identifies their breakpoints (start and end positions). To reduce false positives, runs of fewer than 2 consecutive diagnostic SNPs are ignored.
+6 **Outputs**:
+   - TSV file: or each genome, reports the number and proportion of diagnostic SNPs matching each reference, the resulting recombinant flag, and summary statistics used for tract inference.
+   - Interactive HTML report: Provides sortable tables, summary plots, per-sample visualisations, and genome-wide displays of inferred recombination tracts and breakpoints.
+   - Aligned FASTA: Contains the aligned reference and query sequences used for analysis.
+
+**Note: RecMpox is primarily designed to investigate potential recombination between viruses circulating in sustained human outbreaks (for example, SH2017, SH2023b, and SH2024a). The reference genomes provided by default in the tool correspond to these sustained outbreak lineages. When applying RecMpox outside this context, it is crucial to select reference genomes that are genetically close to your consensus sequences. Using distant or poorly matched references can reduce the interpretability of diagnostic SNPs and may lead to misleading recombinant signals.
 
 ## Installation
 
