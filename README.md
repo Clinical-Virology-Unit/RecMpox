@@ -13,7 +13,7 @@ RecMpox is a command-line tool that **flags potential recombination events** in 
    - Interactive HTML report: Provides sortable tables, summary plots, per-sample visualisations, and genome-wide displays of inferred recombination tracts and breakpoints.
    - Aligned FASTA: Contains the aligned reference and query sequences used for analysis.
 
-**Note**: RecMpox is primarily designed to investigate potential recombination between viruses circulating in sustained human outbreaks (for example, SH2017, SH2023b, and SH2024a). The reference genomes provided by default in the tool correspond to these sustained outbreak lineages. When applying RecMpox outside this context, it is crucial to select reference genomes that are genetically close to your consensus sequences. Using distant or poorly matched references can reduce the interpretability of diagnostic SNPs and may lead to misleading recombinant signals.
+⚠️ **Note**: RecMpox is primarily designed to investigate potential recombination between viruses circulating in sustained human outbreaks (for example, SH2017, SH2023b, and SH2024a). The reference genomes provided by default in the tool correspond to these sustained outbreak lineages. When applying RecMpox outside this context, it is crucial to select reference genomes that are genetically close to your consensus sequences. Using distant or poorly matched references can reduce the interpretability of diagnostic SNPs and may lead to misleading recombinant signals.
 
 ## Installation
 
@@ -99,6 +99,12 @@ Intermediate files (e.g. diagnostic_snps.txt, Squirrel outputs) are written unde
 - **No recombinant**: One ref dominates (minor ref &lt; 5% of diagnostic sites).
 - **Potential recombinant**: Both refs contribute ≥5% (minor ref % ≥ 5%). The HTML report shows recombination tracts (beginning/end of each tract) and breakpoints between tracts. A single tract means the genome is entirely one clade (no recombination).
 - **High pct_other**: Many Ns, gaps, or non-ref bases at diagnostic sites (poor coverage or alignment).
+
+## HTML Output example
+
+Example HTML output for one sample:
+
+![HTML Output Example](html_example.png)
 
 ## Citation
 
