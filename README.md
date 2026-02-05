@@ -97,7 +97,7 @@ Intermediate files (e.g. diagnostic_snps.txt, Squirrel outputs) are written unde
 ## Interpretation
 
 - **No recombinant**: One ref dominates (minor ref &lt; 5% of diagnostic sites).
-- **Potential recombinant**: Both refs contribute ≥5% (minor ref % ≥ 5%). The HTML report shows recombination tracts (beginning/end of each tract) and breakpoints between tracts; a single tract means the genome is entirely one clade (no recombination).
+- **Potential recombinant**: Both refs contribute ≥5% (minor ref % ≥ 5%). The HTML report shows recombination tracts (beginning/end of each tract) and breakpoints between tracts. A single tract means the genome is entirely one clade (no recombination).
 - **High pct_other**: Many Ns, gaps, or non-ref bases at diagnostic sites (poor coverage or alignment).
 
 ## Citation
