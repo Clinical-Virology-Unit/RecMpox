@@ -2,7 +2,7 @@
 
 RecMpox is a command-line tool that **flags potential recombination events** in monkeypox viruses. It does not confirm recombination, but highlights genomes that may be recombinant and warrants further investigation. RecMpox works by detecting regions within a genome that appear to originate from two different parental viruses.
 
-### How RecMpox Works??
+### How RecMpox Works?
 1. **References are required**: RecMpox compares your genomes against two reference sequences (for example, Clade Ia vs. Ib, or Ib vs. IIb), because recombination can only occur between two distinct lineages.
 2. **Alignment and diagnostic SNPs**: The references are aligned using [Squirrel](https://github.com/aineniamh/squirrel), ensuring that each position is directly comparable. RecMpox identifies positions where the two references differ. These are called diagnostic SNPs. These SNPs are informative because they indicate which lineage a base came from. Positions that are identical between the references are ignored, as they provide no information about recombination.
 3. **Consensus genome classification**: Your consensus genomes are aligned to the same references. At each diagnostic SNP, the base is classified as matching reference 1, reference 2, or other (e.g., gaps or ambiguous bases).
