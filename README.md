@@ -11,7 +11,7 @@ git clone https://github.com/DaanJansen94/RecMpox.git
 cd RecMpox
 conda env create -f environment-recmpox.yml
 conda activate recmpox
-pip install
+pip install .
 ```
 
 ### 2. Re-installation (when updates are available):
