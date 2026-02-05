@@ -1,6 +1,6 @@
 # RecMpox
 
-RecMpox is a command-line tool that **flags potential recombination events** in monkeypox viruses. It does not confirm recombination, but highlights genomes that may be recombinant and warrants further investigation. RecMpox works by detecting regions within a genome that appear to originate from two different parental viruses.
+RecMpox is a command-line tool that **flags potential recombination events** in monkeypox viruses. It does not confirm recombination, but highlights genomes that may be recombinant and warrant further investigation. RecMpox works by detecting regions within a genome that appear to originate from two different parental viruses. Such patterns are not conclusive evidence as they can also arise from factors such as shared ancestral variation, convergent mutations, or sequencing and assembly artefacts.
 
 ### How RecMpox Works?
 1. **References are required**: RecMpox compares your genomes against two reference sequences (for example, Clade Ia vs. Ib, or Ib vs. IIb), because recombination can only occur between two distinct lineages.
