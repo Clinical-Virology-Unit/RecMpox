@@ -4,8 +4,12 @@ authors:
   - family-names: Jansen
     given-names: Daan
     orcid: https://orcid.org/0000-0003-4612-6891
-title: "RecMpox: Classify consensus mpox genomes at diagnostic SNPs (recombinant calling)"
+  - family-names: Vercauteren
+    given-names: Koen
+    orcid: https://orcid.org/0000-0003-1472-9938
+doi: "10.5281/zenodo.18387008"
+title: "RecMpox: A Command-Line Tool for Flagging Potential Recombination Events in Monkeypox Viruses"
 version: v0.0.1
 url: github.com/DaanJansen94/RecMpox
 date-released: 2026-02-02
-abstract: "RecMpox classifies consensus mpox genomes at diagnostic SNPs and flags potential recombinants."
+abstract: "RecMpox flags potential recombination events in mpox consensus genomes and reveals location of recombination breakpoints."
