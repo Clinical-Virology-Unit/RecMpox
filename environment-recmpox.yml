@@ -1,0 +1,11 @@
+name: recmpox
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.9
+  - minimap2
+  - samtools
+  - squirrel
+variables:
+  PYTHONNOUSERSITE: "1"
