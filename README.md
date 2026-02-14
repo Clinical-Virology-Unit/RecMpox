@@ -17,26 +17,46 @@ RecMpox is a command-line tool that **flags potential recombination events** in 
 
 ## Installation
 
-### 1. Create conda environment with required tools and install RecMpox
-
+### Prerequisites
+First, install conda if you haven't already:
 ```bash
-git clone https://github.com/DaanJansen94/RecMpox.git
-cd RecMpox
-conda env create -f environment-recmpox.yml
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+```
+
+Then, ensure you have the required channels:
+```bash
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
+### Option 1: Using Conda (Recommended)
+Install [RecMpox via Conda](https://anaconda.org/bioconda/recmpox):
+```bash
+conda create -n recmpox -c conda-forge -c bioconda recmpox -y
 conda activate recmpox
-pip install .
 ```
 
-### 2. Re-installation (when updates are available):
+### Option 2: From Source Code
+1. Create conda environment with required tools and install RecMpox
+   ```bash
+   git clone https://github.com/DaanJansen94/RecMpox.git
+   cd RecMpox
+   conda env create -f environment-recmpox.yml
+   conda activate recmpox
+   pip install .
+   ```
 
-```bash
-conda activate RecMpox  # Make sure you're in the right environment
-cd RecMpox
-git pull  # Get the latest updates from GitHub
-pip uninstall RecMpox
-pip install .
-```
-
+2. Re-installation (when updates are available):
+   ```bash
+   conda activate RecMpox  # Make sure you're in the right environment
+   cd RecMpox
+   git pull  # Get the latest updates from GitHub
+   pip uninstall RecMpox
+   pip install .
+   ```
+   
 ## Usage
 
 ### Basic usage
