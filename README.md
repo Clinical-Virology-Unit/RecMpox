@@ -113,7 +113,7 @@ Also on [**Zenodo**](https://doi.org/10.5281/zenodo.18495962) and [**Docker**](h
 If you use RecMpox in your research, please cite:
 
 ```
-Jansen, D., & Vercauteren, K. RecMpox: A Command-Line Tool for Flagging Potential Recombination Events in Monkeypox Viruses (v0.0.1). Zenodo. https://doi.org/10.5281/zenodo.18495962
+Jansen, D., & Vercauteren, K. RecMpox: A Command-Line Tool for Flagging Potential Recombination Events in Monkeypox Viruses (v0.0.2). Zenodo. https://doi.org/10.5281/zenodo.18495962
 ```
 
 ## License
