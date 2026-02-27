@@ -51,7 +51,7 @@ about:
     It does not confirm recombination; it flags genomes that may be recombinant for further investigation.
     RecMpox takes two references (e.g. Clade Ia vs Ib, or IIa vs IIb), aligns them with Squirrel,
     finds diagnostic SNP positions where the references differ, then classifies each consensus genome
-    at those positions. Genomes where both refs contribute at least 5% are flagged as potential
+    at those positions. Genomes where both refs contribute at least 10% are flagged as potential
     recombinants. Recombination tracts and breakpoints are inferred along the genome.
   doc_url: https://github.com/DaanJansen94/RecMpox/blob/main/README.md
   dev_url: https://github.com/DaanJansen94/RecMpox

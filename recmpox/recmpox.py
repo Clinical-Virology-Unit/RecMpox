@@ -93,8 +93,8 @@ def resolve_ref(spec: str, work_dir: Path, label: str) -> Optional[Path]:
 
 
 # Minor ref % = smaller of pct_ref1, pct_ref2 over ALL diagnostic sites. When >= threshold, flag as potential recombinant.
-# Recombinant threshold: 5% for all (intra- and inter-clade)
-MINOR_REF_PCT_THRESHOLD = 5.0
+# Default recombinant threshold: 10% for all (intra- and inter-clade)
+MINOR_REF_PCT_THRESHOLD = 10.0
 
 # Default NCBI accessions per clade/subclade (used when -ref X,Y is given)
 REF_DEFAULTS = {
@@ -1220,6 +1220,15 @@ Examples:
     optional = parser.add_argument_group("optional arguments")
     parser.add_argument("-h", "-help", "--help", action="help", help="show this help message and exit")
     optional.add_argument("--version", action="version", version=f"RecMpox v{__version__}")
+    optional.add_argument(
+        "-m",
+        "--minor-ref-pct",
+        dest="minor_ref_pct",
+        type=float,
+        default=MINOR_REF_PCT_THRESHOLD,
+        metavar="",
+        help=f"Minor reference %% threshold for calling 'potential recombinant' (default: {MINOR_REF_PCT_THRESHOLD:g}).",
+    )
     required.add_argument("-i", "-input", dest="input", type=Path, default=None, metavar="", help="FASTA file, directory of .fa/.fasta/.fna, .txt file of accessions (one per line or comma-separated), NCBI accession, or comma-separated accessions (e.g. -i ACC1,ACC2 or -i accessions.txt)")
     required.add_argument("-ref", dest="ref", type=str, default=None, metavar="", help="Reference pair: two comma-separated labels among Ia, Ib, IIa, IIb (e.g. Ia,Ib or Ib,IIb). Uses built-in defaults. Either -ref or both -ref1 and -ref2 are required.")
     required.add_argument("-ref1", type=str, default=None, metavar="", help="First reference: FASTA path or NCBI accession; overrides ref1 when using -ref. Required if -ref is not used.")
@@ -1238,6 +1247,11 @@ Examples:
         return
 
     args = parser.parse_args()
+
+    if getattr(args, "minor_ref_pct", None) is None:
+        args.minor_ref_pct = MINOR_REF_PCT_THRESHOLD
+    if args.minor_ref_pct < 0 or args.minor_ref_pct > 100:
+        parser.error("--minor-ref-pct must be between 0 and 100")
 
     if args.input is None:
         parser.error("-i/-input is required")
@@ -1294,7 +1308,7 @@ Examples:
     if squirrel_clade is None:
         squirrel_clade = _infer_squirrel_clade(ref1_label, ref2_label)
     is_intra_clade = squirrel_clade is not None
-    minor_threshold = MINOR_REF_PCT_THRESHOLD
+    minor_threshold = float(getattr(args, "minor_ref_pct", MINOR_REF_PCT_THRESHOLD))
     if squirrel_clade == "cladei":
         logger.info("Inferred Squirrel --clade cladei from ref1_g/ref2_g (Clade I)")
     elif squirrel_clade == "cladeii":
@@ -1526,8 +1540,8 @@ Examples:
         logger.info("Wrote %s (%d potential recombinant samples)", out_sites_tsv, len(rec_samples))
 
     recombinant_threshold_note = (
-        "A 5% threshold is used for all recombinant calls: "
-        "when minor ref % ≥ 5%, the sample is flagged as potential recombinant."
+        f"A {minor_threshold:g}% threshold is used for all recombinant calls: "
+        f"when minor ref % ≥ {minor_threshold:g}%, the sample is flagged as potential recombinant."
     )
     other_explanation = (
         "%% other = diagnostic sites where the query neither matched %s nor %s (different base; at SNPs, gap/N count as other)."

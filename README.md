@@ -9,7 +9,7 @@ RecMpox is a command-line tool that **flags potential recombination events** in 
 1. **References are required**: RecMpox compares your genomes against two reference sequences (for example, Clade Ia vs. Ib, or Ib vs. IIb), because recombination can only occur between two distinct lineages.
 2. **Alignment and diagnostic SNPs**: The two reference genomes are aligned using [Squirrel](https://github.com/aineniamh/squirrel), so that the same genomic positions correspond across all sequences. RecMpox then identifies positions where the two references differ at the same coordinates. These positions are defined as diagnostic SNPs, because they distinguish between the reference lineages. Positions where the references are identical are ignored, as they do not provide information for detecting recombination.
 3. **Consensus genome classification**: Your consensus genomes are aligned to the same references. At each diagnostic SNP, the base is classified as matching reference 1, reference 2, or other (e.g., gaps or ambiguous bases).
-4. **Flagging potential recombinants**: If both references contribute at least 5% of the diagnostic positions in a genome, RecMpox flags it as a potential recombinant, since no single lineage clearly dominates.
+4. **Flagging potential recombinants**: If both references contribute at least 10% of the diagnostic positions in a genome, RecMpox flags it as a potential recombinant, since no single lineage clearly dominates.
 5. **Recombination tracts and breakpoints**: By examining the pattern of reference matches along the genome, RecMpox infers recombination tracts and identifies their breakpoints (start and end positions). To reduce false positives, runs of fewer than 2 consecutive diagnostic SNPs are ignored.
 6 **Outputs**:
    - TSV file: or each genome, reports the number and proportion of diagnostic SNPs matching each reference, the resulting recombinant flag, and summary statistics used for tract inference.
@@ -98,6 +98,7 @@ recmpox -i accessions.txt -o output -ref Ia,Ib   # one accession per line or com
 - `-ref1_g`, `-ref2_g`: Genotype labels for TSV/HTML (default from `-ref` or accession)
 - `-include-indels`: Include diagnostic indels (default: SNPs only)
 - `-min-indel-size`: Min indel length (bp) when using `-include-indels` (default: 100)
+- `-m, --minor-ref-pct`: Minor reference % threshold for calling "potential recombinant" (default: 10). Increase to be more conservative (e.g. 15, 20).
 - `-t, --threads`: Number of threads
 - `-q, --quiet`: Log to file only
 
@@ -126,8 +127,8 @@ Intermediate files (e.g. diagnostic_snps.txt, Squirrel outputs) are written unde
 
 ## Interpretation
 
-- **No recombinant**: One ref dominates (minor ref &lt; 5% of diagnostic sites).
-- **Potential recombinant**: Both refs contribute ≥5% (minor ref % ≥ 5%). The HTML report shows recombination tracts (beginning/end of each tract) and breakpoints between tracts. A single tract means the genome is entirely one clade (no recombination).
+- **No recombinant**: One ref dominates (minor ref &lt; 10% of diagnostic sites).
+- **Potential recombinant**: Both refs contribute ≥10% (minor ref % ≥ 10%). The HTML report shows recombination tracts (beginning/end of each tract) and breakpoints between tracts. A single tract means the genome is entirely one clade (no recombination).
 - **High pct_other**: Many Ns, gaps, or non-ref bases at diagnostic sites (poor coverage or alignment).
 
 ## HTML Output example
