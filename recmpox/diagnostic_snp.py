@@ -470,12 +470,12 @@ def consensus_from_snp_percentages(
 def get_runs_and_breakpoints(
     positions_allegiances: List[Tuple[int, str]],
     diagnostic_snp_positions: List[int],
-    min_consecutive: int = 2,
+    min_consecutive: int = 1,
 ) -> Tuple[List[Tuple[int, int, str, int]], List[Tuple[int, int, str, str]]]:
     """
     Build runs of consecutive ia/ib along diagnostic SNPs; "other" (ambiguous) ends a run.
-    Only call a breakpoint when *both* the run before and the run after have >= min_consecutive SNPs
-    (avoids false positives from single differing SNPs flanked by the other clade). SNPs classified
+    Only call a breakpoint when *both* the run before and the run after have >= min_consecutive SNPs.
+    If min_consecutive is 1, all runs are considered (no consecutive-SNP filtering). SNPs classified
     as "other" are ignored for run boundaries.
 
     Returns:

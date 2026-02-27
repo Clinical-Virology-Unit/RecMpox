@@ -469,6 +469,7 @@ def _write_results_html(
     other_explanation: Optional[str] = None,
     is_intra_clade: bool = True,
     minor_threshold: float = 10.0,
+    breakpoint_min_consecutive_snps: int = 1,
     part_index: Optional[int] = None,
     total_parts: Optional[int] = None,
     n_diagnostic_snps: Optional[int] = None,
@@ -652,10 +653,10 @@ def _write_results_html(
         ).format(ref1=html_escape(strip_ref1_name), ref2=html_escape(strip_ref2_name))
         rec_sites_html = rec_sites_html + sections_html + "</div></div></div></details>"
 
-    # Breakpoints per sample: regions (runs) with breakpoints marked (min 2 consecutive SNPs rule; other ignored)
+    # Breakpoints per sample: regions (runs) with breakpoints marked (optional consecutive-SNP filtering)
     breakpoints_section_html = ""
     if diagnostic_snp_positions and results:
-        min_consecutive = 2
+        min_consecutive = max(1, int(breakpoint_min_consecutive_snps))
         no_regions_placeholder = '<span class="threshold-note">No regions</span>'
         breakpoints_sections_html = ""
         for ri, r in enumerate(results):
@@ -675,9 +676,9 @@ def _write_results_html(
                     merged[-1] = (merged[-1][0], end_pos, clade, merged[-1][3] + n_snps)
                 else:
                     merged.append((start_pos, end_pos, clade, n_snps))
-            # Keep only sustained tracts (>= 2 SNPs); dropping 1-SNP runs can leave consecutive same-clade
-            sustained = [m for m in merged if m[3] >= 2]
-            # Merge again: consecutive same-clade in sustained (e.g. IIb, Ib_1SNP_dropped, IIb -> two IIb in a row)
+            # Keep only sustained tracts (>= min_consecutive SNPs); if min_consecutive=1, keep all tracts.
+            sustained = [m for m in merged if m[3] >= min_consecutive]
+            # Merge again: consecutive same-clade in sustained (can occur after dropping short runs when min_consecutive>1)
             merged_tracts = []
             for (start_pos, end_pos, clade, n_snps) in sustained:
                 if merged_tracts and merged_tracts[-1][2] == clade:
@@ -705,7 +706,7 @@ def _write_results_html(
             if n_tracts == 0:
                 strip_display = no_regions_placeholder
                 summary_text = "Show recombination tracts (Number of tracts: 0, breakpoints: 0)"
-                details_content = '<p class="threshold-note">No sustained tracts (≥2 consecutive SNPs) in this genome.</p>'
+                details_content = f'<p class="threshold-note">No sustained tracts (≥{min_consecutive} consecutive SNPs) in this genome.</p>'
             elif n_tracts == 1:
                 strip_display = '<span class="threshold-note">No recombination (genome entirely one clade)</span>'
                 summary_text = "No recombination tracts (genome entirely one clade)"
@@ -737,12 +738,12 @@ def _write_results_html(
             '<details class="collapsible-section diagnostic-strips-chart" open id="breakpointsStripsSection">'
             '<summary><h2>Recombination breakpoints per sample</h2></summary>'
             '<div class="section-inner chart-section">'
-            '<p class="threshold-note">Predicted recombination breakpoints within each genome. We show the beginning and end of each detected tract (first and last diagnostic SNP of that clade). The <strong>breakpoint lies in the region between</strong> the end of one tract and the start of the next; we cannot pinpoint its exact position because those regions have no diagnostic SNPs (genetically identical). Breakpoints require at least 2 consecutive SNPs on both sides (single-SNP runs are ignored). <span id="breakpointsFilterCount" aria-live="polite"></span></p>'
+            '<p class="threshold-note">Predicted recombination breakpoints within each genome. We show the beginning and end of each detected tract (first and last diagnostic SNP of that clade). The <strong>breakpoint lies in the region between</strong> the end of one tract and the start of the next; we cannot pinpoint its exact position because those regions have no diagnostic SNPs (genetically identical). Minimum consecutive diagnostic SNPs per tract: <strong>{min_consecutive}</strong>. <span id="breakpointsFilterCount" aria-live="polite"></span></p>'
             '<p class="threshold-note">{ref1} (blue), {ref2} (orange), breakpoint (red bar).</p>'
             '<div class="strip-legend"><span class="strip-legend-ia"></span> {ref1} &nbsp; <span class="strip-legend-ib"></span> {ref2} &nbsp; <span class="strip-legend-breakpoint"></span> breakpoint</div>'
             '<div class="strip-strips-container" id="breakpointsStripScrollWrapper">'
             '<div id="breakpointsStripsContainer">'
-        ).format(ref1=html_escape(strip_ref1_name), ref2=html_escape(strip_ref2_name))
+        ).format(ref1=html_escape(strip_ref1_name), ref2=html_escape(strip_ref2_name), min_consecutive=min_consecutive)
         breakpoints_section_html = breakpoints_section_html + breakpoints_sections_html + "</div></div></div></details>"
 
     # Figure: diagnostic SNP positions on genome – count, histogram, then ruler (exact positions)
@@ -1219,15 +1220,24 @@ Examples:
     required = parser.add_argument_group("required arguments (must specify when running)")
     optional = parser.add_argument_group("optional arguments")
     parser.add_argument("-h", "-help", "--help", action="help", help="show this help message and exit")
-    optional.add_argument("--version", action="version", version=f"RecMpox v{__version__}")
+    optional.add_argument("-version", action="version", version=f"RecMpox v{__version__}")
     optional.add_argument(
         "-m",
-        "--minor-ref-pct",
+        "-minor-ref-pct",
         dest="minor_ref_pct",
         type=float,
         default=MINOR_REF_PCT_THRESHOLD,
         metavar="",
         help=f"Minor reference %% threshold for calling 'potential recombinant' (default: {MINOR_REF_PCT_THRESHOLD:g}).",
+    )
+    optional.add_argument(
+        "-b",
+        "-breakpoint-snp",
+        dest="breakpoint_min_snps",
+        action="store_const",
+        const=2,
+        default=1,
+        help="Ignore single-SNP runs when inferring breakpoints (sets minimum consecutive diagnostic SNPs per tract to 2; default: 1).",
     )
     required.add_argument("-i", "-input", dest="input", type=Path, default=None, metavar="", help="FASTA file, directory of .fa/.fasta/.fna, .txt file of accessions (one per line or comma-separated), NCBI accession, or comma-separated accessions (e.g. -i ACC1,ACC2 or -i accessions.txt)")
     required.add_argument("-ref", dest="ref", type=str, default=None, metavar="", help="Reference pair: two comma-separated labels among Ia, Ib, IIa, IIb (e.g. Ia,Ib or Ib,IIb). Uses built-in defaults. Either -ref or both -ref1 and -ref2 are required.")
@@ -1251,7 +1261,8 @@ Examples:
     if getattr(args, "minor_ref_pct", None) is None:
         args.minor_ref_pct = MINOR_REF_PCT_THRESHOLD
     if args.minor_ref_pct < 0 or args.minor_ref_pct > 100:
-        parser.error("--minor-ref-pct must be between 0 and 100")
+        parser.error("-minor-ref-pct must be between 0 and 100")
+    # breakpoint_min_snps is a fixed 1 (default) or 2 (when -b/-breakpoint-snp is used)
 
     if args.input is None:
         parser.error("-i/-input is required")
@@ -1552,14 +1563,14 @@ Examples:
     n_snps = len(diagnostic_snps)
     if len(results) <= HTML_CHUNK_SIZE:
         out_html = args.output / "recmpox_results.html"
-        _write_results_html(out_html, results, ref1_label, ref2_label, recombinant_threshold_note, other_explanation, is_intra_clade, minor_threshold, n_diagnostic_snps=n_snps, n_indel_columns=n_indel_columns, ref1_spec=args.ref1, ref2_spec=args.ref2, diagnostic_snp_positions=[p for (p, _, _) in diagnostic_snps], genome_length=ref_len)
+        _write_results_html(out_html, results, ref1_label, ref2_label, recombinant_threshold_note, other_explanation, is_intra_clade, minor_threshold, breakpoint_min_consecutive_snps=int(getattr(args, "breakpoint_min_snps", 1)), n_diagnostic_snps=n_snps, n_indel_columns=n_indel_columns, ref1_spec=args.ref1, ref2_spec=args.ref2, diagnostic_snp_positions=[p for (p, _, _) in diagnostic_snps], genome_length=ref_len)
         html_files.append(out_html)
         logger.info("Wrote %s", out_html)
     else:
         chunks = [results[i:i + HTML_CHUNK_SIZE] for i in range(0, len(results), HTML_CHUNK_SIZE)]
         for part, chunk in enumerate(chunks, start=1):
             out_html = args.output / f"recmpox_results_{part}.html"
-            _write_results_html(out_html, chunk, ref1_label, ref2_label, recombinant_threshold_note, other_explanation, is_intra_clade, minor_threshold, part_index=part, total_parts=len(chunks), n_diagnostic_snps=n_snps, n_indel_columns=n_indel_columns, ref1_spec=args.ref1, ref2_spec=args.ref2, diagnostic_snp_positions=[p for (p, _, _) in diagnostic_snps], genome_length=ref_len)
+            _write_results_html(out_html, chunk, ref1_label, ref2_label, recombinant_threshold_note, other_explanation, is_intra_clade, minor_threshold, breakpoint_min_consecutive_snps=int(getattr(args, "breakpoint_min_snps", 1)), part_index=part, total_parts=len(chunks), n_diagnostic_snps=n_snps, n_indel_columns=n_indel_columns, ref1_spec=args.ref1, ref2_spec=args.ref2, diagnostic_snp_positions=[p for (p, _, _) in diagnostic_snps], genome_length=ref_len)
             html_files.append(out_html)
             logger.info("Wrote %s (%d genomes)", out_html, len(chunk))
         # Index page linking to all parts
