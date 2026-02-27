@@ -11,7 +11,7 @@ RecMpox is a command-line tool that **flags potential recombination events** in 
 3. **Consensus genome classification**: Your consensus genomes are aligned to the same references. At each diagnostic SNP, the base is classified as matching reference 1, reference 2, or other (e.g., gaps or ambiguous bases).
 4. **Flagging potential recombinants**: If both references contribute at least 10% of the diagnostic positions in a genome, RecMpox flags it as a potential recombinant, since no single lineage clearly dominates.
 5. **Recombination tracts and breakpoints**: By examining the pattern of reference matches along the genome, RecMpox infers recombination tracts and identifies their breakpoints (start and end positions). By default, no consecutive-SNP filtering is applied (minimum run length = 1), but you can ignore single-SNP runs by adding `-breakpoint-snp` (or `-b`), which sets the minimum run length to 2.
-6 **Outputs**:
+6. **Outputs**:
    - TSV file: or each genome, reports the number and proportion of diagnostic SNPs matching each reference, the resulting recombinant flag, and summary statistics used for tract inference.
    - Interactive HTML report: Provides sortable tables, summary plots, per-sample visualisations, and genome-wide displays of inferred recombination tracts and breakpoints.
    - Aligned FASTA: Contains the aligned reference and query sequences used for analysis.
