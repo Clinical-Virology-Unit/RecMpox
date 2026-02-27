@@ -49,6 +49,37 @@ logger = logging.getLogger(__name__)
 NCBI_EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
 
+def _safe_fasta_id(raw_id: str) -> str:
+    """
+    Make a FASTA ID safe for external tools (notably Squirrel), which rejects
+    some special characters (e.g. ':'). Keep only [A-Za-z0-9_.-], replace the
+    rest with '_' and collapse repeats.
+    """
+    s = (raw_id or "").strip()
+    # Prefer the first token (drop long NCBI descriptions)
+    s = s.split()[0] if s else "seq"
+    s = re.sub(r"[^A-Za-z0-9_.-]+", "_", s)
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s or "seq"
+
+
+def _sanitize_fasta_ids(in_path: Path, out_path: Path) -> None:
+    """Rewrite FASTA with safe IDs; keep sequences unchanged."""
+    seen: Dict[str, int] = {}
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(in_path) as inp, open(out_path, "w") as out:
+        for line in inp:
+            if line.startswith(">"):
+                raw = line[1:].strip()
+                base = _safe_fasta_id(raw)
+                n = seen.get(base, 0) + 1
+                seen[base] = n
+                safe = base if n == 1 else f"{base}_{n}"
+                out.write(f">{safe}\n")
+            else:
+                out.write(line)
+
+
 def fetch_nucleotide_fasta(accession: str, out_path: Path) -> bool:
     """Fetch nucleotide by NCBI accession; save as FASTA. Returns True on success.
     SSL certificate verification is disabled to work in restricted networks (proxy/firewall).
@@ -307,28 +338,46 @@ def concatenate_fasta_dir(input_dir: Path, out_path: Path) -> Path:
 def _run_squirrel(clade: Optional[str], squirrel_in: Path, squirrel_out: Path, expected_aln: Path) -> None:
     """Run Squirrel on squirrel_in, output to squirrel_out; expect expected_aln to exist afterward. If clade is None, run Squirrel without --clade (mixed I/II)."""
     if not expected_aln.exists():
+        # Put Squirrel temp workdir on the same filesystem as outputs to avoid
+        # Snakemake mtime/clock-skew issues on some shared filesystems.
+        tempdir = squirrel_out / "tmp"
+        tempdir.mkdir(parents=True, exist_ok=True)
         if clade == "cladei":
             logger.info("Running Squirrel (--clade cladei) to align...")
-            cmd = ["squirrel", "--clade", "cladei", str(squirrel_in), "-o", str(squirrel_out)]
+            cmd = ["squirrel", "--clade", "cladei", str(squirrel_in), "-o", str(squirrel_out), "--tempdir", str(tempdir)]
         elif clade == "cladeii":
             logger.info("Running Squirrel (Clade II default) to align...")
-            cmd = ["squirrel", str(squirrel_in), "-o", str(squirrel_out)]
+            cmd = ["squirrel", str(squirrel_in), "-o", str(squirrel_out), "--tempdir", str(tempdir)]
         else:
             logger.info("Running Squirrel (no --clade; mixed or default reference) to align...")
-            cmd = ["squirrel", str(squirrel_in), "-o", str(squirrel_out)]
+            cmd = ["squirrel", str(squirrel_in), "-o", str(squirrel_out), "--tempdir", str(tempdir)]
         env = os.environ.copy()
         env["PYTHONNOUSERSITE"] = "1"
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600, env=env)
             if result.returncode != 0:
-                logger.error("Squirrel failed (exit %s). Install with: conda install -c bioconda squirrel", result.returncode)
-                if result.stderr:
-                    for line in result.stderr.strip().splitlines():
-                        logger.error("Squirrel stderr: %s", line)
-                if result.stdout:
-                    for line in result.stdout.strip().splitlines():
+                # Squirrel uses Snakemake; on some shared filesystems you can get a non-zero exit due to
+                # "clock skew" / coarse timestamp resolution even though the expected alignment file was
+                # successfully written. If the expected output exists and stderr indicates this case,
+                # treat it as a warning and continue.
+                stderr_txt = (result.stderr or "").strip()
+                stdout_txt = (result.stdout or "").strip()
+                is_clock_skew = ("clock skew" in stderr_txt.lower()) or ("older modification time" in stderr_txt.lower())
+                if expected_aln.exists() and expected_aln.stat().st_size > 0 and is_clock_skew:
+                    logger.warning("Squirrel reported a filesystem mtime/clock-skew error (exit %s) but produced %s; continuing.", result.returncode, expected_aln)
+                    for line in stderr_txt.splitlines():
+                        logger.warning("Squirrel stderr: %s", line)
+                    for line in stdout_txt.splitlines():
                         logger.info("Squirrel stdout: %s", line)
-                sys.exit(1)
+                else:
+                    logger.error("Squirrel failed (exit %s).", result.returncode)
+                    if stderr_txt:
+                        for line in stderr_txt.splitlines():
+                            logger.error("Squirrel stderr: %s", line)
+                    if stdout_txt:
+                        for line in stdout_txt.splitlines():
+                            logger.info("Squirrel stdout: %s", line)
+                    sys.exit(1)
         except FileNotFoundError as e:
             logger.error("Squirrel not found (install with: conda install -c bioconda squirrel): %s", e)
             sys.exit(1)
@@ -1349,20 +1398,22 @@ Examples:
         logger.error("Could not resolve ref2: %s", args.ref2)
         sys.exit(1)
 
-    ref_ia_id = load_ref_sequence(ref_ia_path)[0]
-    ref_ib_id = load_ref_sequence(ref_ib_path)[0]
-    ref_ia_key = ref_ia_id.replace("/", "_")
-    ref_ib_key = ref_ib_id.replace("/", "_")
+    ref_ia_id, ref_ia_unaligned = load_ref_sequence(ref_ia_path)
+    ref_ib_id, ref_ib_unaligned = load_ref_sequence(ref_ib_path)
+    ref_ia_key = _safe_fasta_id(ref_ia_id.replace("/", "_"))
+    ref_ib_key = _safe_fasta_id(ref_ib_id.replace("/", "_"))
 
     # --- Step 1: Align ref Ia + ref Ib ONLY to find diagnostic SNPs and indels ---
     squirrel_out_refs = work_dir / "squirrel_out_refs"
     squirrel_out_refs.mkdir(parents=True, exist_ok=True)
     squirrel_in_refs = work_dir / "squirrel_input_refs_only.fa"
     with open(squirrel_in_refs, "w") as out:
-        with open(ref_ia_path) as f:
-            out.write(f.read())
-        with open(ref_ib_path) as f:
-            out.write(f.read())
+        out.write(f">{ref_ia_key}\n")
+        for i in range(0, len(ref_ia_unaligned), 80):
+            out.write(ref_ia_unaligned[i : i + 80] + "\n")
+        out.write(f">{ref_ib_key}\n")
+        for i in range(0, len(ref_ib_unaligned), 80):
+            out.write(ref_ib_unaligned[i : i + 80] + "\n")
     logger.info("Step 1: Built %s (ref Ia + ref Ib only) to find diagnostic sites", squirrel_in_refs)
 
     aln_refs_stem = squirrel_in_refs.stem + ".aln.fasta"
@@ -1435,15 +1486,20 @@ Examples:
     squirrel_out_queries = work_dir / "squirrel_out_queries"
     squirrel_out_queries.mkdir(parents=True, exist_ok=True)
     squirrel_in_queries = work_dir / "squirrel_input_ref_and_queries.fa"
+    queries_fa_sanitized = work_dir / "queries_sanitized.fa"
+    _sanitize_fasta_ids(Path(queries_fa), queries_fa_sanitized)
     with open(squirrel_in_queries, "w") as out:
         # Use aligned refs from step 1 (ref_ia_seq, ref_ib_seq) so step 2 alignment has same coordinates
-        out.write(f">{ref_ia_aln_key}\n")
+        # IMPORTANT: Squirrel is strict about FASTA IDs (no special characters like ':').
+        # The step-1 alignment keys can include the full NCBI description (spaces->underscores),
+        # which may contain ':' and break Squirrel. Use safe, short IDs here.
+        out.write(f">{ref_ia_key}\n")
         for i in range(0, len(ref_ia_seq), 80):
             out.write(ref_ia_seq[i : i + 80] + "\n")
-        out.write(f">{ref_ib_aln_key}\n")
+        out.write(f">{ref_ib_key}\n")
         for i in range(0, len(ref_ib_seq), 80):
             out.write(ref_ib_seq[i : i + 80] + "\n")
-        with open(queries_fa) as f:
+        with open(queries_fa_sanitized) as f:
             out.write(f.read())
     logger.info("Step 2: Built %s (ref Ia + ref Ib + consensus genomes) to classify at diagnostic positions", squirrel_in_queries)
 
