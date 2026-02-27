@@ -14,6 +14,7 @@ build:
   noarch: python
   entry_points:
     - recmpox=recmpox.recmpox:main
+    - rempox=recmpox.recmpox:main
   script:
     - "{{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vvv"
     - mkdir -p $PREFIX/etc/conda/activate.d

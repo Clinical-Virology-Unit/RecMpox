@@ -1,6 +1,6 @@
 """RecMpox: Classify consensus mpox genomes at diagnostic SNPs (recombinant calling)."""
 
-__version__ = "0.0.2"
+from ._version import __version__
 
 from .recmpox import main
 

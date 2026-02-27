@@ -31,6 +31,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from ._version import __version__
 from .diagnostic_snp import (
     allegiance_summary,
     allegiance_summary_snp_only,
@@ -1198,14 +1199,16 @@ def split_fasta_into_seqs(fasta: Path, out_dir: Path) -> List[Path]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="RecMpox: Recombination flagging of mpox sequences (Ia vs Ib).",
+        prog="recmpox",
+        description=f"RecMpox v{__version__}: Flag potential recombination in mpox consensus genomes using diagnostic sites between two reference lineages.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False,
         epilog="""
 Examples:
-  # Use built-in defaults: -ref Ia,Ib (ref1=OZ254474.1, ref2=PP601219.1) or -ref IIa,IIb
+  # Use built-in defaults (Ia=OZ254474.1, Ib=PP601219.1, IIa=OZ287284.1, IIb=NC_063383.1)
   recmpox -i fasta/ -o output -ref Ia,Ib
-  recmpox -i fasta/ -o output -ref IIa,IIb
+  recmpox -i OZ375330.1 -o output -ref Ib,IIb  # UK recombinant case example
+  recmpox -i accessions.txt -o output -ref Ia,Ib
 
   # Override references: -ref1/-ref2 with optional -ref1_g/-ref2_g
   recmpox -i fasta/ -o output -ref1 NC_003310.1 -ref2 PP601219.1 -ref1_g Ia -ref2_g Ib
@@ -1216,8 +1219,9 @@ Examples:
     required = parser.add_argument_group("required arguments (must specify when running)")
     optional = parser.add_argument_group("optional arguments")
     parser.add_argument("-h", "-help", "--help", action="help", help="show this help message and exit")
+    optional.add_argument("--version", action="version", version=f"RecMpox v{__version__}")
     required.add_argument("-i", "-input", dest="input", type=Path, default=None, metavar="", help="FASTA file, directory of .fa/.fasta/.fna, .txt file of accessions (one per line or comma-separated), NCBI accession, or comma-separated accessions (e.g. -i ACC1,ACC2 or -i accessions.txt)")
-    required.add_argument("-ref", dest="ref", type=str, default=None, metavar="", help="Reference pair: comma-separated subclade labels, e.g. Ia,Ib or IIa,IIb. Uses built-in defaults. Either -ref or both -ref1 and -ref2 are required.")
+    required.add_argument("-ref", dest="ref", type=str, default=None, metavar="", help="Reference pair: two comma-separated labels among Ia, Ib, IIa, IIb (e.g. Ia,Ib or Ib,IIb). Uses built-in defaults. Either -ref or both -ref1 and -ref2 are required.")
     required.add_argument("-ref1", type=str, default=None, metavar="", help="First reference: FASTA path or NCBI accession; overrides ref1 when using -ref. Required if -ref is not used.")
     required.add_argument("-ref2", type=str, default=None, metavar="", help="Second reference: FASTA path or NCBI accession; overrides ref2 when using -ref. Required if -ref is not used.")
     optional.add_argument("-o", "-output", dest="output_dir", type=str, default="output", metavar="", help="Output directory (default: output); path is relative to cwd; always removed and recreated at start of each run")
@@ -1227,6 +1231,12 @@ Examples:
     optional.add_argument("-min-indel-size", type=int, default=100, dest="min_indel_size", metavar="", help="Minimum indel length (bp) for diagnostic indels when using -include-indels (default: 100)")
     optional.add_argument("-t", "-threads", dest="threads", type=int, default=1, metavar="", help="Specify number of threads to use (n=1 by default)")
     optional.add_argument("-q", "-quiet", action="store_true", dest="quiet", help="Log to file only")
+
+    # If called with no arguments, show help (same output as --help) instead of erroring.
+    if len(sys.argv) == 1:
+        parser.print_help()
+        return
+
     args = parser.parse_args()
 
     if args.input is None:

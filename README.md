@@ -1,5 +1,7 @@
 # RecMpox
 
+Current release: **v0.0.2**
+
 RecMpox is a command-line tool that **flags potential recombination events** in monkeypox viruses. It does not confirm recombination, but highlights genomes that may be recombinant and warrant further investigation. RecMpox works by detecting regions within a genome that appear to originate from two different parental viruses. Such patterns are not conclusive evidence of recombination, as similar signals can also arise from shared ancestral variation, convergent mutations, mixed populations (e.g., co-infections or laboratory contamination), or sequencing and assembly errors.
 
 
@@ -27,9 +29,10 @@ bash Miniconda3-latest-Linux-x86_64.sh
 
 Then, ensure you have the required channels:
 ```bash
-conda config --add channels defaults
-conda config --add channels bioconda
 conda config --add channels conda-forge
+conda config --add channels bioconda
+conda config --add channels defaults
+conda config --set channel_priority strict
 ```
 
 ### Option 1: Using Conda (Recommended)
@@ -71,15 +74,15 @@ conda activate recmpox
 ```bash
 # Use built-in references: Ia vs Ib or IIa vs IIb (sequences downloaded automatically)
 recmpox -i fasta/ -o output -ref Ia,Ib -t 4
-recmpox -i fasta/ -o output -ref IIa,IIb -t 4
+recmpox -i fasta/ -o output -ref Ib,IIb -t 4
 
 # Input can be: FASTA file, directory of .fa/.fasta/.fna, or NCBI accession(s)
 recmpox -i consensus.fa -o output -ref Ia,Ib
-recmpox -i OZ375330.1,PX739443.1 -o output -ref IIa,IIb
+recmpox -i OZ375330.1 -o output -ref Ib,IIb   # UK recombinant case example
 recmpox -i accessions.txt -o output -ref Ia,Ib   # one accession per line or comma-separated
 ```
 
-**Note**: Either `-ref` (e.g. `Ia,Ib` or `IIa,IIb`) or both `-ref1` and `-ref2` are required. With `-ref`, default references are used (Ia=OZ254474.1, Ib=PP601219.1, IIa=OZ287284.1, IIb=NC_063383.1).
+**Note**: Either `-ref` (e.g. `Ia,Ib`, `IIa,IIb`, or `Ib,IIb`) or both `-ref1` and `-ref2` are required. With `-ref`, default references are used (Ia=OZ254474.1, Ib=PP601219.1, IIa=OZ287284.1, IIb=NC_063383.1).
 
 ### Command-line options
 

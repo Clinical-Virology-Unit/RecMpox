@@ -16,6 +16,7 @@ setup(
     entry_points={
         "console_scripts": [
             "recmpox=recmpox.recmpox:main",
+            "rempox=recmpox.recmpox:main",
         ],
     },
     classifiers=[
