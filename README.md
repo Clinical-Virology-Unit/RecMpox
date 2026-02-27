@@ -147,6 +147,14 @@ If you use RecMpox in your research, please cite:
 Jansen, D., & Vercauteren, K. RecMpox: A Command-Line Tool for Flagging Potential Recombination Events in Monkeypox Viruses (v0.0.2). Zenodo. https://doi.org/10.5281/zenodo.18495962
 ```
 
+## Acknowledgements
+
+RecMpox integrates several external bioinformatics tools. Please also cite these tools as appropriate when using RecMpox:
+
+- [Squirrel](https://github.com/aineniamh/squirrel) 
+- [minimap2](https://github.com/lh3/minimap2) 
+- [samtools](https://www.htslib.org/)
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 (GPL-3.0) - see the [LICENSE](LICENSE) file for details.
