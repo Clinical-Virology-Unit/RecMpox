@@ -33,9 +33,15 @@ conda config --add channels conda-forge
 ```
 
 ### Option 1: Using Conda (Recommended)
-Install [RecMpox via Conda](https://anaconda.org/bioconda/recmpox):
+Standard install [RecMpox via Conda](https://anaconda.org/bioconda/recmpox):
 ```bash
 conda create -n recmpox -c conda-forge -c bioconda recmpox -y
+conda activate recmpox
+```
+
+OR, if the above fails:
+```bash
+conda create -y -n recmpox -c conda-forge -c bioconda recmpox python=3.11 --solver libmamba --strict-channel-priority
 conda activate recmpox
 ```
 
