@@ -1286,7 +1286,7 @@ Examples:
         action="store_const",
         const=2,
         default=1,
-        help="Ignore single-SNP runs when inferring breakpoints (sets minimum consecutive diagnostic SNPs per tract to 2; default: 1).",
+        help="Ignore single-SNP runs when inferring breakpoints (with -b: minimum consecutive diagnostic SNPs per tract = 2; default without -b: 1).",
     )
     required.add_argument("-i", "-input", dest="input", type=Path, default=None, metavar="", help="FASTA file, directory of .fa/.fasta/.fna, .txt file of accessions (one per line or comma-separated), NCBI accession, or comma-separated accessions (e.g. -i ACC1,ACC2 or -i accessions.txt)")
     required.add_argument("-ref", dest="ref", type=str, default=None, metavar="", help="Reference pair: two comma-separated labels among Ia, Ib, IIa, IIb (e.g. Ia,Ib or Ib,IIb). Uses built-in defaults. Either -ref or both -ref1 and -ref2 are required.")
